@@ -96,7 +96,16 @@ var PolitoMaterials = function(course_code){
 	};
 }
 
-var materials = new PolitoMaterials('01OGDLM');
-if(materials.update_latest_material() === true){
-	materials.notify_subscribers();
-}
+Meteor.setInterval(function(){
+	Email.send({
+				from: 'foysal@foysal.me',
+				to: 'foysal@bdgeeks.com',
+				subject: 'New materials have been uploaded',
+				html: '<p>New Materials has been posted.</p>'
+			});
+	console.log('hi');
+	var materials = new PolitoMaterials('01OGDLM');
+	if(materials.update_latest_material() === true){
+		materials.notify_subscribers();
+	}
+}, 1000*60*5);

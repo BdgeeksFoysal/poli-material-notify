@@ -17,7 +17,7 @@ if(Courses.find({code: '01OGDLM'}).count() < 1){
 	});
 }
 
-var FetchMaterial = function(course_code){
+var PolitoMaterials = function(course_code){
 	this.get_course = function(course_code){
 		var course = Courses.find({code: course_code}, {limit: 1}).fetch();
 
@@ -29,6 +29,7 @@ var FetchMaterial = function(course_code){
 
 	this.course = this.get_course(course_code);
 	this.url = this.course.url;
+	this.latest = this.course.latest;
 
 	this.get_url_content = function(material_number) {
 		var result = Meteor.http.get(this.url+material_number, {timeout:30000});
@@ -65,6 +66,7 @@ var FetchMaterial = function(course_code){
 			++i;
 		}
 
+		this.latest = i-2;
 		return i-2;
 	};
 
@@ -78,9 +80,23 @@ var FetchMaterial = function(course_code){
 		}else{
 			return false;
 		}
+	};
 
+	this.notify_subscribers = function(){
+		var emails = Emails.find({}).fetch();
+
+		if( emails.length > 0 ){
+			Email.send({
+				from: 'foysal@foysal.me',
+				to: emails,
+				subject: 'New materials have been uploaded',
+				html: '<p>New Materials has been posted.</p>'
+			});
+		}
 	};
 }
 
-var materials = new FetchMaterial('01OGDLM');
-console.log(materials.update_latest_material());
+var materials = new PolitoMaterials('01OGDLM');
+if(materials.update_latest_material() === true){
+	materials.notify_subscribers();
+}
